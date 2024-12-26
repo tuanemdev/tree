@@ -1,7 +1,6 @@
 use chrono::{DateTime, Local};
 use clap::Parser;
 use colored::*;
-use rayon::prelude::*;
 use std::fs::File;
 use std::io::{self, Write};
 use walkdir::WalkDir;
