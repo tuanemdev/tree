@@ -9,15 +9,15 @@ use walkdir::WalkDir;
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Sets the root directory to display
-    #[arg(default_value = ".")]
-    directory: String,
+    #[arg(short, long)]
+    directory: Option<String>,
 
     /// Sets the maximum depth to traverse
     #[arg(short, long)]
-    depth: Option<usize>,
+    level: Option<usize>,
 
     /// Show hidden files
-    #[arg(short, long)]
+    #[arg(short, long, action = clap::ArgAction::SetTrue)]
     all: bool,
 
     /// Disable colors
@@ -32,6 +32,10 @@ struct Args {
 fn main() -> io::Result<()> {
     let args: Args = Args::parse();
 
+    // Set the target directory: use the provided directory or default to "."
+    let target_dir = args.directory.unwrap_or_else(|| ".".to_string());
+    let show_hidden: bool = args.all;
+
     let mut output: Box<dyn Write> = match &args.output {
         Some(file_path) => Box::new(File::create(file_path)?),
         None => Box::new(io::stdout()),
@@ -41,14 +45,22 @@ fn main() -> io::Result<()> {
     let mut last_dirs: Vec<bool> = Vec::new();
 
     // Configure WalkDir
-    let walker = WalkDir::new(&args.directory)
+    let walker = WalkDir::new(&target_dir)
         .follow_links(false)
         .into_iter()
-        .filter_entry(|e| !is_hidden(e) || args.all)
+        .filter_entry(|e| {
+            if e.depth() == 0 {
+                // Always include the root directory
+                true
+            } else {
+                // For other entries, include them if they're not hidden or if show_hidden is true
+                !is_hidden(e) || show_hidden
+            }
+        })
         .filter_map(|e| e.ok());
 
     // Collect entries into a vector
-    let entries: Vec<_> = if let Some(max_depth) = args.depth {
+    let entries: Vec<_> = if let Some(max_depth) = args.level {
         walker
             .filter(|e: &walkdir::DirEntry| e.depth() <= max_depth)
             .collect()
