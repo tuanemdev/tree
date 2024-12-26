@@ -92,19 +92,21 @@ fn main() -> io::Result<()> {
 
         // Build the prefix
         let mut prefix = String::new();
-        for d in 0..depth {
-            if last_dirs.get(d).cloned().unwrap_or(false) {
-                prefix.push_str("    ");
-            } else {
-                prefix.push_str("│   ");
-            }
-        }
-
         // Choose the branch character
-        if is_last {
-            prefix.push_str("└── ");
-        } else {
-            prefix.push_str("├── ");
+        if depth > 0 {
+            for d in 1..depth {
+                if last_dirs.get(d).cloned().unwrap_or(false) {
+                    prefix.push_str("    ");
+                } else {
+                    prefix.push_str("│   ");
+                }
+            }
+
+            if is_last {
+                prefix.push_str("└── ");
+            } else {
+                prefix.push_str("├── ");
+            }
         }
 
         // Determine if the entry is a symbolic link
