@@ -5,3 +5,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+walkdir = "2.5.0"
+clap = { version = "4.5.23", features = ["derive"] }
+colored = "2.2.0"
+chrono = "0.4.39"
+rayon = "1.10.0"
